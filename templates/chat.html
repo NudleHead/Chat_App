@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CHAT</title>
+</head>
+
+<body>
+    <h1>Room: {{ room }}</h1>
+    <div id="messages"></div>
+    <form id="message_input_form">
+        <input id="message_input" type="text" placeholder="Enter message">
+        <button type="submit">Send</button>
+    </form>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.0/socket.io.js"></script>
+<script>
+    const socket = io.connect("http://127.0.0.1:5000");
+    socket.on('connect', function () {
+        socket.emit('join_room', {
+            username: "{{ username }}",
+            room: "{{ room }}"
+        });
+        let message_input = document.getElementById('message_input');
+        document.getElementById('message_input_form').onsubmit = function (event) {
+            event.preventDefault();
+            let message = message_input.value.trim();
+            if (message.length) {
+                socket.emit('send_message', {
+                    username: "{{ username}}",
+                    room: "{{ room}}",
+                    message: message
+                })
+            }
+            message_input.value = '';
+            message_input.focus();
+        }
+    });
+    socket.on('receive_message', function (data) {
+        console.log(data);
+        const showUser = document.createElement('div');
+        showUser.innerHTML = `<b>${data.username}:&nbsp;</b> ${data.message}`;
+        document.getElementById('messages').appendChild(showUser);
+
+    });
+
+    socket.on('join_room_notice', function (data) {
+        console.log(data);wa
+        const showUser = document.createElement('div');
+        showUser.innerHTML = `<b>${data.username}</b> has joined the room`;
+        document.getElementById('messages').appendChild(showUser);
+
+    })
+</script>
+
+</html>
